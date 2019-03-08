@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+
+<mapper namespace="com.zhang.dao.RresourceDAO">
+
+	<resultMap id="RresourceResult" type="com.zhang.model.Rresource">
+	</resultMap>
+	
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="rresourceColumns">
+	    <![CDATA[
+        	id as id,
+        	title as title,
+        	url as url,
+        	file_type as fileType,
+        	file_size as fileSize,
+        	download_url as downloadUrl,
+        	update_time as updateTime,
+        	create_time as createTime
+	    ]]>
+	</sql>
+
+	<!-- useGeneratedKeys="true" keyProperty="xxx" for sqlserver and mysql -->
+	<insert id="insert" parameterType="com.zhang.model.Rresource"
+		useGeneratedKeys="true" keyProperty="id" 
+	>
+    <![CDATA[
+        INSERT INTO
+        r_resource (
+        	id ,
+        	title ,
+        	url ,
+        	file_type ,
+        	file_size ,
+        	download_url ,
+        	update_time ,
+        	create_time 
+        ) VALUES (
+        	#{id,jdbcType=INTEGER} ,
+        	#{title,jdbcType=VARCHAR} ,
+        	#{url,jdbcType=VARCHAR} ,
+        	#{fileType,jdbcType=VARCHAR} ,
+        	#{fileSize,jdbcType=VARCHAR} ,
+        	#{downloadUrl,jdbcType=VARCHAR} ,
+        	now() ,
+        	now()
+        )
+    ]]>
+		<!--	
+			oracle: order="BEFORE" SELECT sequenceName.nextval AS ID FROM DUAL 
+			DB2: order="BEFORE"" values nextval for sequenceName
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="userId">
+			SELECT sequenceName.nextval AS ID FROM DUAL 
+        </selectKey>
+		-->
+	</insert>
+    
+	<update id="update" parameterType="com.zhang.model.Rresource">
+    <![CDATA[
+        UPDATE r_resource SET
+	        title = #{title,jdbcType=VARCHAR} ,
+	        url = #{url,jdbcType=VARCHAR} ,
+	        file_type = #{fileType,jdbcType=VARCHAR} ,
+	        file_size = #{fileSize,jdbcType=VARCHAR} ,
+	        download_url = #{downloadUrl,jdbcType=VARCHAR} ,
+	        update_time = now() ,
+	        create_time = #{createTime,jdbcType=VARCHAR}
+        WHERE 
+	        id = #{id} 
+    ]]>
+	</update>
+
+    <delete id="delete" parameterType="java.lang.Integer">
+    <![CDATA[
+        delete from r_resource where
+        id = #{id} 
+    ]]>
+    </delete>
+    
+    <select id="getById" parameterType="java.lang.Integer" resultMap="RresourceResult">
+		select <include refid="rresourceColumns" />
+	    <![CDATA[
+		    from r_resource 
+	        where 
+		        id = #{id} 
+	    ]]>
+	</select>
+	
+	<sql id="rresourceDynamicWhere">
+		<where>
+	       <if test="id != null and id != ''">
+				and id = #{id}
+			</if>
+	       <if test="title != null and title != ''">
+				and title = #{title}
+			</if>
+	       <if test="url != null and url != ''">
+				and url = #{url}
+			</if>
+	       <if test="fileType != null and fileType != ''">
+				and file_type = #{fileType}
+			</if>
+	       <if test="fileSize != null and fileSize != ''">
+				and file_size = #{fileSize}
+			</if>
+	       <if test="downloadUrl != null and downloadUrl != ''">
+				and download_url = #{downloadUrl}
+			</if>
+	       <if test="updateTime != null and updateTime != ''">
+				and update_time = #{updateTime}
+			</if>
+	       <if test="createTime != null and createTime != ''">
+				and create_time = #{createTime}
+			</if>
+		</where>
+	</sql>
+		
+    <select id="count" resultType="long">
+        select count(*) from r_resource 
+		<include refid="rresourceDynamicWhere"/>    
+    </select>
+    
+    <!--
+    	分页查询已经使用Dialect进行分页,也可以不使用Dialect直接编写分页
+    	因为分页查询将传 offset,pageSize,lastRows 三个参数,不同的数据库可以根于此三个参数属性应用不同的分页实现
+    -->
+    <select id="pageSelect" resultMap="RresourceResult">
+    	select <include refid="rresourceColumns" />
+	    from r_resource 
+		<include refid="rresourceDynamicWhere"/>
+		<if test="@Ognl@isNotEmpty(sortColumns)">
+			ORDER BY ${sortColumns}
+		</if>
+    </select>
+	<select id="getResourceByUrl" resultMap="RresourceResult" parameterType="java.lang.String">
+		select <include refid="rresourceColumns" />
+		from r_resource
+		where url = #{url}
+	</select>
+
+</mapper>
