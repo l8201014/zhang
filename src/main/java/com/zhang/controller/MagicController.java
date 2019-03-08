@@ -3,6 +3,7 @@ package com.zhang.controller;
 import com.zhang.model.Rresource;
 import com.zhang.service.RresourceService;
 import com.zhang.util.JsonUtil;
+import com.zhang.util.PageConfig;
 import com.zhang.util.Response;
 import com.zhang.util.UrlUtrl;
 import com.zhang.util.link.LinkFilter;
@@ -28,8 +29,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.lang.System.currentTimeMillis;
-
 /**
  * @author ：zhangwn
  * @date ：Created in 2019/3/7 13:55
@@ -50,22 +49,30 @@ public class MagicController {
     public String queryMagnetic (HttpServletRequest request){
         String keyWord = request.getParameter("KeyWord");
         logger.info(keyWord);
+        String pageIndex = request.getParameter("pageIndex") == null ? "1" : request.getParameter("pageIndex");
+        PageConfig pageConfig = new PageConfig();
+        pageConfig.setPageIndex(Integer.parseInt(pageIndex));
+        pageConfig.setTotalCount(getTotalNum(keyWord));
         long start = System.currentTimeMillis();
         List<Rresource> resourcesList = getList(keyWord);
+        pageConfig.setTotalCount(10);
         long end = System.currentTimeMillis();
         logger.info("queryMagnetic耗时:" + (end - start));
-        return JsonUtil.getJson(new Response(resourcesList));
+        return JsonUtil.getJson(new Response(resourcesList,pageConfig));
     }
 
     @RequestMapping("/queryMagnetic1")
     public String queryMagnetic1 (HttpServletRequest request){
         String keyWord = request.getParameter("KeyWord");
+        PageConfig pageConfig = new PageConfig();
+        pageConfig.setPageIndex(1);
+        pageConfig.setTotalCount(7);
         logger.info(keyWord);
         long start = System.currentTimeMillis();
         List<Rresource> resourcesList = getListNew(keyWord);
         long end = System.currentTimeMillis();
         logger.info("queryMagnetic1耗时:" + (end - start));
-        return JsonUtil.getJson(new Response(resourcesList));
+        return JsonUtil.getJson(new Response(resourcesList,pageConfig));
     }
 
     /**
@@ -81,7 +88,7 @@ public class MagicController {
         Rresource resource = getDetails(listUrl);
         long end = System.currentTimeMillis();
         logger.info("queryMagneticDetails耗时:" + (end - start));
-        return JsonUtil.getJson(new Response(resource));
+        return JsonUtil.getJson(new Response(resource,null));
     }
 
     /**
@@ -94,10 +101,10 @@ public class MagicController {
         String listUrl = request.getParameter("listUrl");
         logger.info(listUrl);
         long start = System.currentTimeMillis();
-        Rresource resource = getDetails(listUrl);
+        Rresource resource = getDetailsNew(listUrl);
         long end = System.currentTimeMillis();
         logger.info("queryMagneticDetails1耗时:" + (end - start));
-        return JsonUtil.getJson(new Response(resource));
+        return JsonUtil.getJson(new Response(resource,null));
     }
 
     /**
@@ -121,14 +128,14 @@ public class MagicController {
      */
     public List<Rresource> getList(String keyWord) {
         List<Rresource> resourcesList = new ArrayList<>();
-        String[] seeds = new String[]{"https://www.findcl.co/list?q=" + URLEncoder.encode(keyWord)};
+        String[] seeds = new String[]{UrlUtrl.SB_URL + "/list?q=" + URLEncoder.encode(keyWord)};
         //初始化 URL 队列
         initCrawlerWithSeeds(seeds);
 
         //定义过滤器，提取以 http://www.baidu.com 开头的链接
         LinkFilter filter = new LinkFilter() {
             public boolean accept(String url) {
-                if (url.startsWith("https://www.findcl.co"))
+                if (url.startsWith(UrlUtrl.SB_URL))
                     return true;
                 else
                     return false;
@@ -179,7 +186,10 @@ public class MagicController {
                 resource.setFileType(stringList.get(0));
                 resource.setCreateTime(stringList.get(2));
                 resource.setFileSize(stringList.get(1));
-                resourceService.insert(resource);
+                Rresource isresource = resourceService.getResourceByUrl(titleList.get(0));
+                if(null == isresource){
+                    resourceService.insert(resource);
+                }
                 resourcesList.add(resource);
             }
 //            //将保存文件
@@ -202,12 +212,12 @@ public class MagicController {
         Rresource resource = resourceService.getResourceByUrl(listUrl);
         if(null != resource && StringUtils.isEmpty(resource.getDownloadUrl())){
             //初始化 URL 队列
-            initCrawlerWithSeeds(new String[]{"https://www.findcl.co"+listUrl});
+            initCrawlerWithSeeds(new String[]{UrlUtrl.SB_URL+listUrl});
 
             //定义过滤器，提取以 http://www.baidu.com 开头的链接
             LinkFilter filter = new LinkFilter() {
                 public boolean accept(String url) {
-                    if (url.startsWith("https://www.findcl.co"))
+                    if (url.startsWith(UrlUtrl.SB_URL))
                         return true;
                     else
                         return false;
@@ -336,5 +346,32 @@ public class MagicController {
             e.printStackTrace();
         }
         return resource;
+    }
+    public Integer getTotalNum(String keyWord){
+        Integer totalNum = 0;
+        try {
+            String newUrl = UrlUtrl.SB_URL + "/list?q=" + URLEncoder.encode(keyWord);//transformUrl(url, keyword, page);
+            String html = Jsoup.connect(newUrl).get().body().html();
+            Pattern pattern= Pattern.compile("(?<=傻逼吧为您找到相关结果约).*?(?=个)");
+            Matcher matcher=pattern.matcher(html);
+            //将所有匹配的结果打印输出
+            while(matcher.find()) {
+                System.out.println(matcher.group());
+                totalNum = Integer.parseInt(matcher.group());
+            }
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return totalNum;
+    }
+    public static void main(String[] args) throws IOException {
+        String newUrl = UrlUtrl.SB_URL + "/list?q=" + URLEncoder.encode("海贼王");//transformUrl(url, keyword, page);
+        String html = Jsoup.connect(newUrl).get().body().html();
+        Pattern pattern= Pattern.compile("(?<=傻逼吧为您找到相关结果约).*?(?=个)");
+        Matcher matcher=pattern.matcher(html);
+        //将所有匹配的结果打印输出
+        while(matcher.find()) {
+            System.out.println(matcher.group());
+        }
     }
 }
