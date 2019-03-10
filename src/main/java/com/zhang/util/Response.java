@@ -12,12 +12,11 @@ public class Response implements Serializable {
     private String respCode;
     private String respMsg;
     private Object Date;
-    private PageConfig pageConfig;
 
-    public Response(Object Date,PageConfig pageConfig){
+    public Response(Object Date){
         this.respCode = "200";
+        this.respMsg = "成功";
         this.Date = Date;
-        this.pageConfig = pageConfig;
     }
 
     public String getRespCode() {
@@ -44,11 +43,4 @@ public class Response implements Serializable {
         Date = date;
     }
 
-    public PageConfig getPageConfig() {
-        return pageConfig;
-    }
-
-    public void setPageConfig(PageConfig pageConfig) {
-        this.pageConfig = pageConfig;
-    }
 }

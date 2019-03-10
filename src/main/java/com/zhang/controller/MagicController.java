@@ -1,5 +1,7 @@
 package com.zhang.controller;
 
+import com.zhang.entity.RresourceDetaileRsp;
+import com.zhang.entity.RresourceRsp;
 import com.zhang.model.Rresource;
 import com.zhang.service.RresourceService;
 import com.zhang.util.JsonUtil;
@@ -17,6 +19,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,6 +37,7 @@ import java.util.regex.Pattern;
  * @date ：Created in 2019/3/7 13:55
  * @modified By：
  */
+@CrossOrigin
 @RestController
 @RequestMapping("/magic")
 public class MagicController {
@@ -47,7 +51,8 @@ public class MagicController {
     private final Logger logger = LoggerFactory.getLogger(MagicController.class);
     @RequestMapping("/queryMagnetic")
     public String queryMagnetic (HttpServletRequest request){
-        String keyWord = request.getParameter("KeyWord");
+        RresourceRsp rsp = new RresourceRsp();
+        String keyWord = request.getParameter("keyWord");
         logger.info(keyWord);
         String pageIndex = request.getParameter("pageIndex") == null ? "1" : request.getParameter("pageIndex");
         PageConfig pageConfig = new PageConfig();
@@ -55,24 +60,29 @@ public class MagicController {
         pageConfig.setTotalCount(getTotalNum(keyWord));
         long start = System.currentTimeMillis();
         List<Rresource> resourcesList = getList(keyWord);
-        pageConfig.setTotalCount(10);
         long end = System.currentTimeMillis();
         logger.info("queryMagnetic耗时:" + (end - start));
-        return JsonUtil.getJson(new Response(resourcesList,pageConfig));
+        rsp.setResponseList(resourcesList);
+        rsp.setPageConfig(pageConfig);
+        return JsonUtil.getJson(new Response(rsp));
     }
 
     @RequestMapping("/queryMagnetic1")
     public String queryMagnetic1 (HttpServletRequest request){
-        String keyWord = request.getParameter("KeyWord");
+        RresourceRsp rsp = new RresourceRsp();
+        String keyWord = request.getParameter("keyWord");
+        String pageIndex = request.getParameter("pageIndex") == null ? "1" : request.getParameter("pageIndex");
         PageConfig pageConfig = new PageConfig();
-        pageConfig.setPageIndex(1);
-        pageConfig.setTotalCount(7);
+        pageConfig.setPageIndex(Integer.parseInt(pageIndex));
+        pageConfig.setTotalCount(getTotalNum(keyWord));
         logger.info(keyWord);
         long start = System.currentTimeMillis();
         List<Rresource> resourcesList = getListNew(keyWord);
         long end = System.currentTimeMillis();
         logger.info("queryMagnetic1耗时:" + (end - start));
-        return JsonUtil.getJson(new Response(resourcesList,pageConfig));
+        rsp.setResponseList(resourcesList);
+        rsp.setPageConfig(pageConfig);
+        return JsonUtil.getJson(new Response(rsp));
     }
 
     /**
@@ -82,13 +92,15 @@ public class MagicController {
      */
     @RequestMapping("/queryMagneticDetails")
     public String queryMagneticDetails (HttpServletRequest request){
+        RresourceDetaileRsp rsp = new RresourceDetaileRsp();
         String listUrl = request.getParameter("listUrl");
         logger.info(listUrl);
         long start = System.currentTimeMillis();
         Rresource resource = getDetails(listUrl);
         long end = System.currentTimeMillis();
         logger.info("queryMagneticDetails耗时:" + (end - start));
-        return JsonUtil.getJson(new Response(resource,null));
+        rsp.setResource(resource);
+        return JsonUtil.getJson(new Response(rsp));
     }
 
     /**
@@ -98,13 +110,15 @@ public class MagicController {
      */
     @RequestMapping("/queryMagneticDetails1")
     public String queryMagneticDetails1 (HttpServletRequest request){
+        RresourceDetaileRsp rsp = new RresourceDetaileRsp();
         String listUrl = request.getParameter("listUrl");
         logger.info(listUrl);
         long start = System.currentTimeMillis();
         Rresource resource = getDetailsNew(listUrl);
         long end = System.currentTimeMillis();
         logger.info("queryMagneticDetails1耗时:" + (end - start));
-        return JsonUtil.getJson(new Response(resource,null));
+        rsp.setResource(resource);
+        return JsonUtil.getJson(new Response(rsp));
     }
 
     /**
@@ -356,8 +370,8 @@ public class MagicController {
             Matcher matcher=pattern.matcher(html);
             //将所有匹配的结果打印输出
             while(matcher.find()) {
-                System.out.println(matcher.group());
-                totalNum = Integer.parseInt(matcher.group());
+                logger.info(matcher.group());
+                totalNum = Integer.parseInt(matcher.group().trim());
             }
         }catch (IOException e){
             e.printStackTrace();
@@ -372,6 +386,7 @@ public class MagicController {
         //将所有匹配的结果打印输出
         while(matcher.find()) {
             System.out.println(matcher.group());
+            System.out.println(Integer.parseInt(matcher.group().trim()));
         }
     }
 }
