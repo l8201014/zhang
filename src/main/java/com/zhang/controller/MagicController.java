@@ -3,6 +3,7 @@ package com.zhang.controller;
 import com.zhang.entity.RresourceDetaileRsp;
 import com.zhang.entity.RresourceRsp;
 import com.zhang.model.Rresource;
+import com.zhang.service.RkeywordService;
 import com.zhang.service.RresourceService;
 import com.zhang.util.JsonUtil;
 import com.zhang.util.PageConfig;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,20 +37,21 @@ import java.util.regex.Pattern;
 /**
  * @author ：zhangwn
  * @date ：Created in 2019/3/7 13:55
- * @modified By：
+ * @modified By：H5地址  http://www.xywz.xyz/h5/magnet/search
  */
 @CrossOrigin
 @RestController
 @RequestMapping("/magic")
 public class MagicController {
-
+    private final Logger logger = LoggerFactory.getLogger(MagicController.class);
     @Resource
     private RresourceService resourceService;
+    @Resource
+    private RkeywordService rkeywordService;
 
     /**
      * 获取列表
      */
-    private final Logger logger = LoggerFactory.getLogger(MagicController.class);
     @RequestMapping("/queryMagnetic")
     public String queryMagnetic (HttpServletRequest request){
         RresourceRsp rsp = new RresourceRsp();
@@ -56,17 +59,31 @@ public class MagicController {
         logger.info(keyWord);
         String pageIndex = request.getParameter("pageIndex") == null ? "1" : request.getParameter("pageIndex");
         PageConfig pageConfig = new PageConfig();
-        pageConfig.setPageIndex(Integer.parseInt(pageIndex));
-        pageConfig.setTotalCount(getTotalNum(keyWord));
+        //统计用户搜索关键字
+        rkeywordService.statisticsKeyword(keyWord);
         long start = System.currentTimeMillis();
-        List<Rresource> resourcesList = getList(keyWord);
+        List<Rresource> resourcesList = getList(keyWord,pageIndex);
         long end = System.currentTimeMillis();
         logger.info("queryMagnetic耗时:" + (end - start));
-        rsp.setResponseList(resourcesList);
+        if(null == resourcesList || resourcesList.size() <= 0){
+            //resourcesList.add(null);
+            pageConfig.setPageIndex(0);
+            pageConfig.setTotalCount(0);
+
+        }else{
+            pageConfig.setPageIndex(Integer.parseInt(pageIndex));
+            pageConfig.setTotalCount(getTotalNum(keyWord));
+        }
         rsp.setPageConfig(pageConfig);
-        return JsonUtil.getJson(new Response(rsp));
+        rsp.setResponseList(resourcesList);
+        return JsonUtil.objectToJsonStr(new Response(rsp));
     }
 
+    /**
+     * 废弃
+     * @param request
+     * @return
+     */
     @RequestMapping("/queryMagnetic1")
     public String queryMagnetic1 (HttpServletRequest request){
         RresourceRsp rsp = new RresourceRsp();
@@ -82,6 +99,9 @@ public class MagicController {
         logger.info("queryMagnetic1耗时:" + (end - start));
         rsp.setResponseList(resourcesList);
         rsp.setPageConfig(pageConfig);
+        if(null == resourcesList || resourcesList.size() <= 0){
+            return JsonUtil.getJson(new Response(null));
+        }
         return JsonUtil.getJson(new Response(rsp));
     }
 
@@ -93,18 +113,21 @@ public class MagicController {
     @RequestMapping("/queryMagneticDetails")
     public String queryMagneticDetails (HttpServletRequest request){
         RresourceDetaileRsp rsp = new RresourceDetaileRsp();
-        String listUrl = request.getParameter("listUrl");
-        logger.info(listUrl);
+        String id = request.getParameter("id");
+        logger.info("详情id" + id);
         long start = System.currentTimeMillis();
-        Rresource resource = getDetails(listUrl);
+        Rresource resource = getDetails(id);
         long end = System.currentTimeMillis();
         logger.info("queryMagneticDetails耗时:" + (end - start));
         rsp.setResource(resource);
-        return JsonUtil.getJson(new Response(rsp));
+        if(null == resource){
+            return JsonUtil.objectToJsonStr(new Response("400","未找到相关信息"));
+        }
+        return JsonUtil.objectToJsonStr(new Response(rsp));
     }
 
     /**
-     * 获取资源详情
+     * 获取资源详情(废弃)
      * @param request
      * @return
      */
@@ -118,6 +141,9 @@ public class MagicController {
         long end = System.currentTimeMillis();
         logger.info("queryMagneticDetails1耗时:" + (end - start));
         rsp.setResource(resource);
+        if(null == resource){
+            return JsonUtil.getJson(new Response(null));
+        }
         return JsonUtil.getJson(new Response(rsp));
     }
 
@@ -140,9 +166,9 @@ public class MagicController {
      * @param keyWord
      * @return
      */
-    public List<Rresource> getList(String keyWord) {
+    public List<Rresource> getList(String keyWord,String pageIndex) {
         List<Rresource> resourcesList = new ArrayList<>();
-        String[] seeds = new String[]{UrlUtrl.SB_URL + "/list?q=" + URLEncoder.encode(keyWord)};
+        String[] seeds = new String[]{UrlUtrl.SB_URL + "/list?q=" + URLEncoder.encode(keyWord) + "&page=" + pageIndex};
         //初始化 URL 队列
         initCrawlerWithSeeds(seeds);
 
@@ -203,6 +229,8 @@ public class MagicController {
                 Rresource isresource = resourceService.getResourceByUrl(titleList.get(0));
                 if(null == isresource){
                     resourceService.insert(resource);
+                }else {
+                    resource.setId(isresource.getId());
                 }
                 resourcesList.add(resource);
             }
@@ -222,11 +250,11 @@ public class MagicController {
         return resourcesList;
     }
 
-    public Rresource getDetails(String listUrl) {
-        Rresource resource = resourceService.getResourceByUrl(listUrl);
+    public Rresource getDetails(String id) {
+        Rresource resource = resourceService.getResourceById(Integer.parseInt(id));
         if(null != resource && StringUtils.isEmpty(resource.getDownloadUrl())){
             //初始化 URL 队列
-            initCrawlerWithSeeds(new String[]{UrlUtrl.SB_URL+listUrl});
+            initCrawlerWithSeeds(new String[]{UrlUtrl.SB_URL+resource.getUrl()});
 
             //定义过滤器，提取以 http://www.baidu.com 开头的链接
             LinkFilter filter = new LinkFilter() {

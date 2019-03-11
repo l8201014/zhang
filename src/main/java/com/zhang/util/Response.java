@@ -11,12 +11,17 @@ public class Response implements Serializable {
     private static final long serialVersionUID = 7L;
     private String respCode;
     private String respMsg;
-    private Object Date;
+    private Object data;
 
-    public Response(Object Date){
+    public Response(Object data){
         this.respCode = "200";
         this.respMsg = "成功";
-        this.Date = Date;
+        this.data = data;
+    }
+    public Response(String respCode,String respMsg){
+        this.respCode = respCode;
+        this.respMsg = respMsg;
+        this.data = null;
     }
 
     public String getRespCode() {
@@ -35,12 +40,11 @@ public class Response implements Serializable {
         this.respMsg = respMsg;
     }
 
-    public Object getDate() {
-        return Date;
+    public Object getData() {
+        return data;
     }
 
-    public void setDate(Object date) {
-        Date = date;
+    public void setData(Object data) {
+        this.data = data;
     }
-
 }

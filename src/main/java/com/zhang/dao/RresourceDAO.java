@@ -7,4 +7,6 @@ import org.apache.ibatis.annotations.Mapper;
 public interface RresourceDAO extends BesaDAO{
 
     Rresource getResourceByUrl(String url);
+
+    Rresource getResourceById(Integer id);
 }

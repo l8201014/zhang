@@ -141,4 +141,10 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 		where url = #{url}
 	</select>
 
+	<select id="getResourceById" resultMap="RresourceResult" parameterType="java.lang.Integer">
+		select <include refid="rresourceColumns" />
+		from r_resource
+		where id = #{id}
+	</select>
+
 </mapper>

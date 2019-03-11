@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+"http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+
+<mapper namespace="com.zhang.dao.RkeywordDAO">
+
+	<resultMap id="RkeywordResult" type="com.zhang.model.Rkeyword">
+	</resultMap>
+	
+	<!-- 用于select查询公用抽取的列 -->
+	<sql id="rkeywordColumns">
+	    <![CDATA[
+        	id as id,
+        	keyword as keyword,
+        	search_num as searchNum,
+        	update_time as updateTime,
+        	create_time as createTime
+	    ]]>
+	</sql>
+
+	<!-- useGeneratedKeys="true" keyProperty="xxx" for sqlserver and mysql -->
+	<insert id="insert" parameterType="com.zhang.model.Rkeyword"
+		useGeneratedKeys="true" keyProperty="id" 
+	>
+    <![CDATA[
+        INSERT INTO
+        r_keyword (
+        	id ,
+        	keyword ,
+        	search_num ,
+        	update_time ,
+        	create_time 
+        ) VALUES (
+        	#{id,jdbcType=INTEGER} ,
+        	#{keyword,jdbcType=VARCHAR} ,
+        	#{searchNum,jdbcType=INTEGER} ,
+        	now() ,
+        	now()
+        )
+    ]]>
+		<!--	
+			oracle: order="BEFORE" SELECT sequenceName.nextval AS ID FROM DUAL 
+			DB2: order="BEFORE"" values nextval for sequenceName
+		<selectKey resultType="java.lang.Long" order="BEFORE" keyProperty="userId">
+			SELECT sequenceName.nextval AS ID FROM DUAL 
+        </selectKey>
+		-->
+	</insert>
+    
+	<update id="update" parameterType="com.zhang.model.Rkeyword">
+    <![CDATA[
+        UPDATE r_keyword SET
+	        keyword = #{keyword,jdbcType=VARCHAR} ,
+	        search_num = #{searchNum,jdbcType=INTEGER} ,
+	        update_time = now()
+        WHERE 
+	        id = #{id} 
+    ]]>
+	</update>
+
+    <delete id="delete" parameterType="java.lang.Integer">
+    <![CDATA[
+        delete from r_keyword where
+        id = #{id} 
+    ]]>
+    </delete>
+    
+    <select id="getById" parameterType="java.lang.Integer" resultMap="RkeywordResult">
+		select <include refid="rkeywordColumns" />
+	    <![CDATA[
+		    from r_keyword 
+	        where 
+		        id = #{id} 
+	    ]]>
+	</select>
+	
+	<sql id="rkeywordDynamicWhere">
+		<where>
+	       <if test="id != null and id != ''">
+				and id = #{id}
+			</if>
+	       <if test="keyword != null and keyword != ''">
+				and keyword = #{keyword}
+			</if>
+	       <if test="searchNum != null and searchNum != ''">
+				and search_num = #{searchNum}
+			</if>
+	       <if test="updateTime != null and updateTime != ''">
+				and update_time = #{updateTime}
+			</if>
+	       <if test="createTime != null and createTime != ''">
+				and create_time = #{createTime}
+			</if>
+		</where>
+	</sql>
+		
+    <select id="count" resultType="long">
+        select count(*) from r_keyword 
+		<include refid="rkeywordDynamicWhere"/>    
+    </select>
+    
+    <!--
+    	分页查询已经使用Dialect进行分页,也可以不使用Dialect直接编写分页
+    	因为分页查询将传 offset,pageSize,lastRows 三个参数,不同的数据库可以根于此三个参数属性应用不同的分页实现
+    -->
+    <select id="pageSelect" resultMap="RkeywordResult">
+    	select <include refid="rkeywordColumns" />
+	    from r_keyword 
+		<include refid="rkeywordDynamicWhere"/>
+		<if test="@Ognl@isNotEmpty(sortColumns)">
+			ORDER BY ${sortColumns}
+		</if>
+    </select>
+	<select id="getRkeywordByKey" resultMap="RkeywordResult" parameterType="java.lang.String">
+		select <include refid="rkeywordColumns" />
+		from r_keyword
+		where keyword = #{keyword}
+	</select>
+	<select id="getHotKeyword" resultMap="RkeywordResult" parameterType="java.lang.String">
+		select <include refid="rkeywordColumns" />
+		from r_keyword
+		order by search_num desc limit 10
+	</select>
+</mapper>

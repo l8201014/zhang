@@ -1,5 +1,7 @@
 package com.zhang.util;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.springside.modules.mapper.JsonMapper;
 
 /**
@@ -12,5 +14,10 @@ public class JsonUtil {
 
     public static String getJson(Object object){
         return jsonMapper.toJson(object);
+    }
+
+    public static String objectToJsonStr(Object obj){
+        Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+        return gson.toJson(obj);
     }
 }

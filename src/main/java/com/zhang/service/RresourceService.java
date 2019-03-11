@@ -8,4 +8,7 @@ public interface RresourceService {
     public Rresource getResourceByUrl(String listUrl);
 
     public void update(Rresource resource);
+
+    public Rresource getResourceById(Integer id);
+
 }

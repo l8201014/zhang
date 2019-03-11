@@ -12,7 +12,7 @@ import javax.annotation.Resource;
  * @date ：Created in 2019/3/7 17:12
  * @modified By：
  */
-@Service("rresourceService")
+@Service
 public class RresourceServiceImpl implements RresourceService {
 
     @Resource
@@ -31,5 +31,10 @@ public class RresourceServiceImpl implements RresourceService {
     @Override
     public void update(Rresource resource) {
         resourceDAO.update(resource);
+    }
+
+    @Override
+    public Rresource getResourceById(Integer id) {
+        return resourceDAO.getResourceById(id);
     }
 }
