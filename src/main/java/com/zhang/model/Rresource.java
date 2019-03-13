@@ -43,6 +43,10 @@ public class Rresource implements Serializable {
 	 */
 	private String downloadUrl;
 	/**
+	 * 点击数量
+	 */
+	private Integer clickNum;
+	/**
 	 * 更新时间
 	 */
 	private String updateTime;
@@ -124,6 +128,14 @@ public class Rresource implements Serializable {
 	
 	public String getCreateTime() {
 		return this.createTime;
+	}
+
+	public Integer getClickNum() {
+		return clickNum;
+	}
+
+	public void setClickNum(Integer clickNum) {
+		this.clickNum = clickNum;
 	}
 
 	public String toString() {

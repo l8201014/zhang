@@ -18,6 +18,7 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
         	file_type as fileType,
         	file_size as fileSize,
         	download_url as downloadUrl,
+        	click_num as clickNum,
         	update_time as updateTime,
         	create_time as createTime
 	    ]]>
@@ -36,6 +37,7 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
         	file_type ,
         	file_size ,
         	download_url ,
+        	click_num,
         	update_time ,
         	create_time 
         ) VALUES (
@@ -45,6 +47,7 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
         	#{fileType,jdbcType=VARCHAR} ,
         	#{fileSize,jdbcType=VARCHAR} ,
         	#{downloadUrl,jdbcType=VARCHAR} ,
+        	#{clickNum,jdbcType=INTEGER},
         	now() ,
         	now()
         )
@@ -66,6 +69,7 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 	        file_type = #{fileType,jdbcType=VARCHAR} ,
 	        file_size = #{fileSize,jdbcType=VARCHAR} ,
 	        download_url = #{downloadUrl,jdbcType=VARCHAR} ,
+	        click_num = #{clickNum,jdbcType=INTEGER},
 	        update_time = now() ,
 	        create_time = #{createTime,jdbcType=VARCHAR}
         WHERE 

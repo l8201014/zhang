@@ -294,8 +294,6 @@ public class MagicController {
                         stringList.add(matcher.group());
                     }
                     resource.setDownloadUrl(stringList.get(0));
-                    resourceService.update(resource);
-
                 }
 
 //            //将保存文件
@@ -312,6 +310,8 @@ public class MagicController {
 //            }
             }
         }
+        resource.setClickNum(resource.getClickNum()+1);
+        resourceService.update(resource);
         return resource;
     }
 
