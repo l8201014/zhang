@@ -226,11 +226,13 @@ public class MagicController {
                 resource.setFileType(stringList.get(0));
                 resource.setCreateTime(stringList.get(2));
                 resource.setFileSize(stringList.get(1));
+                resource.setClickNum(0);
                 Rresource isresource = resourceService.getResourceByUrl(titleList.get(0));
                 if(null == isresource){
                     resourceService.insert(resource);
                 }else {
                     resource.setId(isresource.getId());
+                    resource.setClickNum(isresource.getClickNum());
                 }
                 resourcesList.add(resource);
             }
