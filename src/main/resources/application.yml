@@ -12,3 +12,7 @@ spring:
 mybatis:
   typeAliasesPackage: com.zhang.model
   mapperLocations: classpath:com/zhang/model/mapper/*.xml
+
+#定时任务时间设置
+task:
+  time: 0 0 0 * * ?

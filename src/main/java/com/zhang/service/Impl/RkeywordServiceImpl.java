@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author ：zhangwn
@@ -36,5 +37,10 @@ public class RkeywordServiceImpl implements RkeywordService {
     @Override
     public List<Rkeyword> getHotKeyword() {
         return rkeywordDAO.getHotKeyword();
+    }
+
+    @Override
+    public List<Rkeyword> getKeyWordByDate(Map<String, Object> map) {
+        return rkeywordDAO.getKeyWordByDate(map);
     }
 }

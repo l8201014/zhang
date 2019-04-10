@@ -123,4 +123,11 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 		from r_keyword
 		order by search_num desc limit 10
 	</select>
+
+	<select id="getKeyWordByDate" resultMap="RkeywordResult" parameterType="java.util.Map">
+		select <include refid="rkeywordColumns" />
+		from r_keyword
+		where update_time &gt; #{yesterday}
+	</select>
+
 </mapper>

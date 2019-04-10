@@ -6,6 +6,8 @@ import com.zhang.service.RresourceService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author ：zhangwn
@@ -36,5 +38,15 @@ public class RresourceServiceImpl implements RresourceService {
     @Override
     public Rresource getResourceById(Integer id) {
         return resourceDAO.getResourceById(id);
+    }
+
+    @Override
+    public List<Rresource> getNoUrlList() {
+        return resourceDAO.getNoUrlList();
+    }
+
+    @Override
+    public List<Rresource> getListByKeyWord(Map<String,Object> map) {
+        return resourceDAO.getListByKeyWord(map);
     }
 }

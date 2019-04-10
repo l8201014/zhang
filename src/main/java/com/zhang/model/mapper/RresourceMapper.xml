@@ -151,4 +151,17 @@ PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
 		where id = #{id}
 	</select>
 
+	<select id="getNoUrlList" resultMap="RresourceResult">
+		select <include refid="rresourceColumns" />
+		from r_resource
+		where download_url is null
+	</select>
+
+	<select id="getListByKeyWord" resultMap="RresourceResult" parameterType="java.util.Map">
+		select <include refid="rresourceColumns" />
+		from r_resource
+		where title like CONCAT('%',#{keyWord},'%')
+		limit #{pagesize},10
+	</select>
+
 </mapper>
