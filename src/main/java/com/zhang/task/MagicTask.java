@@ -39,7 +39,7 @@ public class MagicTask {
     private RkeywordService rkeywordService;
 
 //    @Scheduled(cron = "0 0 0 * * ?")
-    @Scheduled(cron = "${task.time}")
+    @Scheduled(cron = "0 7 14 * * ?")
     public void getMagneticUrlTasks(){
         logger.info("getMagneticUrlTasks定时任务开始....");
         List<Rresource> rresourceList = resourceService.getNoUrlList();
@@ -65,7 +65,8 @@ public class MagicTask {
         //String[] seeds = new String[pageSize * keyWordList.size()];
         if(null != keyWordList && keyWordList.size() > 0){
             for(Rkeyword keyword : keyWordList){
-                int pageSize = reptileMagic.getTotalNum(keyword.getKeyword())/10 + 1;//关键字的总页数
+                //关键字的总页数
+                int pageSize = reptileMagic.getTotalNum(keyword.getKeyword())/10 + 1;
                 String[] seeds = new String[pageSize];
                 for(int j = 1;j <= pageSize;j++){
                     seeds[j-1] = UrlUtrl.SB_URL + "/list?q=" + URLEncoder.encode(keyword.getKeyword()) + "&page=" + j;

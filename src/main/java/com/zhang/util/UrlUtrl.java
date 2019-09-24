@@ -6,5 +6,5 @@ package com.zhang.util;
  * @modified By：
  */
 public class UrlUtrl {
-    public static final String SB_URL = "https://www.findcl.co";
+    public static final String SB_URL = "https://www.51cc.co";
 }

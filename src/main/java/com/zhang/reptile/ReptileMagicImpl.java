@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.regex.Pattern.*;
+
 /**
  * @author ：zhangwn
  * @date ：Created in 2019/4/10 10:03
@@ -59,6 +61,7 @@ public class ReptileMagicImpl implements ReptileMagic {
      * @param keyWord
      * @return
      */
+    @Override
     public List<Rresource> getList(String keyWord, String pageIndex) {
         Map<String,Object> map = new HashMap<>();
         map.put("keyWord",keyWord);
@@ -94,7 +97,7 @@ public class ReptileMagicImpl implements ReptileMagic {
                 //System.out.println(element);
 
                 String str = element.toString();
-                Pattern titlePattern = Pattern.compile("(?<=\\\").*?(?=\\\")");
+                Pattern titlePattern = compile("(?<=\\\").*?(?=\\\")");
                 Matcher titleMatcher = titlePattern.matcher(str);
                 List<String> titleList = new ArrayList<String>();
                 while(titleMatcher.find()) {
@@ -102,7 +105,7 @@ public class ReptileMagicImpl implements ReptileMagic {
                 }
                 List<String> stringList = new ArrayList<String>();
                 //创建Pattern并进行匹配
-                Pattern pattern= Pattern.compile("(?<=<strong>).*?(?=</strong>)");
+                Pattern pattern= compile("(?<=<strong>).*?(?=</strong>)");
                 Matcher matcher=pattern.matcher(str);
                 //将所有匹配的结果打印输出
                 while(matcher.find()) {
@@ -141,6 +144,7 @@ public class ReptileMagicImpl implements ReptileMagic {
         return resourcesList;
     }
 
+    @Override
     public Rresource getDetails(String id) {
         Rresource resource = resourceService.getResourceById(Integer.parseInt(id));
         if(null != resource && StringUtils.isEmpty(resource.getDownloadUrl())){
@@ -149,11 +153,13 @@ public class ReptileMagicImpl implements ReptileMagic {
 
             //定义过滤器，提取以 http://www.baidu.com 开头的链接
             LinkFilter filter = new LinkFilter() {
+                @Override
                 public boolean accept(String url) {
-                    if (url.startsWith(UrlUtrl.SB_URL))
+                    if (url.startsWith(UrlUtrl.SB_URL)) {
                         return true;
-                    else
+                    } else {
                         return false;
+                    }
                 }
             };
 
@@ -177,7 +183,7 @@ public class ReptileMagicImpl implements ReptileMagic {
 //            }
                 for (Element element : es){
                     // System.out.println(element);
-                    Pattern pattern= Pattern.compile("(?<=325fe1c2>).*?(?=</code>)");
+                    Pattern pattern= compile("(?<=325fe1c2>).*?(?=</code>)");
                     Matcher matcher=pattern.matcher(element.toString());
                     List<String> stringList = new ArrayList<String>();
                     while(matcher.find()) {
@@ -206,12 +212,13 @@ public class ReptileMagicImpl implements ReptileMagic {
         return resource;
     }
 
+    @Override
     public List<Rresource> getListNew(String keyWord) {
         List<Rresource> resourceList = new ArrayList<>();
         try {
             String newUrl = UrlUtrl.SB_URL + "/list?q=" + URLEncoder.encode(keyWord);//transformUrl(url, keyword, page);
             String html = Jsoup.connect(newUrl).get().body().html();
-            Pattern urlPattern = Pattern.compile("(?<=href=\").*?(?=\\\")");
+            Pattern urlPattern = compile("(?<=href=\").*?(?=\\\")");
             Matcher urlMatcher = urlPattern.matcher(html);
             List<String> urlList = new ArrayList<String>();
             logger.info("*********************************************************************");
@@ -221,7 +228,7 @@ public class ReptileMagicImpl implements ReptileMagic {
                     urlList.add(urlMatcher.group(0));
                 }
             }
-            Pattern titlePattern = Pattern.compile("(?<=title=\").*?(?=\\\")");
+            Pattern titlePattern = compile("(?<=title=\").*?(?=\\\")");
             Matcher titleMatcher = titlePattern.matcher(html);
             List<String> titleList = new ArrayList<String>();
             logger.info("*********************************************************************");
@@ -234,7 +241,7 @@ public class ReptileMagicImpl implements ReptileMagic {
             logger.info("*********************************************************************");
             List<String> stringList = new ArrayList<String>();
             //创建Pattern并进行匹配
-            Pattern pattern = Pattern.compile("(?<=<strong>).*?(?=</strong>)");
+            Pattern pattern = compile("(?<=<strong>).*?(?=</strong>)");
             Matcher matcher = pattern.matcher(html);
             //将所有匹配的结果打印输出
             while (matcher.find()) {
@@ -248,7 +255,7 @@ public class ReptileMagicImpl implements ReptileMagic {
                 resource.setFileType(stringList.get(i*3));
                 resource.setCreateTime(stringList.get((i*3)+2));
                 resource.setFileSize(stringList.get((i*3)+1));
-                logger.info(JsonUtil.getJson(resource));
+                logger.info(JsonUtil.objectToJsonStr(resource));
                 resourceService.insert(resource);
                 resourceList.add(resource);
             }
@@ -259,13 +266,14 @@ public class ReptileMagicImpl implements ReptileMagic {
         return resourceList;
     }
 
+    @Override
     public Rresource getDetailsNew(String listUrl) {
         Rresource resource = resourceService.getResourceByUrl(listUrl);
         try {
             if (null != resource && StringUtils.isEmpty(resource.getDownloadUrl())) {
                 String newUrl = UrlUtrl.SB_URL + listUrl;//transformUrl(url, keyword, page);
                 String html = Jsoup.connect(newUrl).get().body().html();
-                Pattern pattern= Pattern.compile("(?<=325fe1c2>).*?(?=</code>)");
+                Pattern pattern= compile("(?<=325fe1c2>).*?(?=</code>)");
                 Matcher matcher=pattern.matcher(html);
                 List<String> stringList = new ArrayList<String>();
                 while(matcher.find()) {
@@ -280,12 +288,14 @@ public class ReptileMagicImpl implements ReptileMagic {
         }
         return resource;
     }
+
+    @Override
     public Integer getTotalNum(String keyWord){
         Integer totalNum = 0;
         try {
             String newUrl = UrlUtrl.SB_URL + "/list?q=" + URLEncoder.encode(keyWord);//transformUrl(url, keyword, page);
             String html = Jsoup.connect(newUrl).get().body().html();
-            Pattern pattern= Pattern.compile("(?<=傻逼吧为您找到相关结果约).*?(?=个)");
+            Pattern pattern= compile("(?<=傻逼吧为您找到相关结果约).*?(?=个)");
             Matcher matcher=pattern.matcher(html);
             //将所有匹配的结果打印输出
             while(matcher.find()) {
@@ -298,6 +308,7 @@ public class ReptileMagicImpl implements ReptileMagic {
         return totalNum;
     }
 
+    @Override
     public Rresource getDetailsTask(Rresource resource) {
         if(null != resource && StringUtils.isEmpty(resource.getDownloadUrl())){
             //初始化 URL 队列
@@ -323,7 +334,7 @@ public class ReptileMagicImpl implements ReptileMagic {
 //            }
                 for (Element element : es){
                     // System.out.println(element);
-                    Pattern pattern= Pattern.compile("(?<=325fe1c2>).*?(?=</code>)");
+                    Pattern pattern= compile("(?<=325fe1c2>).*?(?=</code>)");
                     Matcher matcher=pattern.matcher(element.toString());
                     List<String> stringList = new ArrayList<String>();
                     while(matcher.find()) {
@@ -339,6 +350,7 @@ public class ReptileMagicImpl implements ReptileMagic {
         return resource;
     }
 
+    @Override
     public void getListTask(String[] seeds) {
         //String[] seeds = new String[]{UrlUtrl.SB_URL + "/list?q=" + URLEncoder.encode(keyWord) + "&page=" + pageIndex};
         //初始化 URL 队列
@@ -347,10 +359,11 @@ public class ReptileMagicImpl implements ReptileMagic {
         //定义过滤器，提取以 http://www.baidu.com 开头的链接
         LinkFilter filter = new LinkFilter() {
             public boolean accept(String url) {
-                if (url.startsWith(UrlUtrl.SB_URL))
+                if (url.startsWith(UrlUtrl.SB_URL)) {
                     return true;
-                else
+                } else {
                     return false;
+                }
             }
         };
 
@@ -377,7 +390,7 @@ public class ReptileMagicImpl implements ReptileMagic {
                 //System.out.println(element);
 
                 String str = element.toString();
-                Pattern titlePattern = Pattern.compile("(?<=\\\").*?(?=\\\")");
+                Pattern titlePattern = compile("(?<=\\\").*?(?=\\\")");
                 Matcher titleMatcher = titlePattern.matcher(str);
                 List<String> titleList = new ArrayList<String>();
                 while(titleMatcher.find()) {
@@ -385,7 +398,7 @@ public class ReptileMagicImpl implements ReptileMagic {
                 }
                 List<String> stringList = new ArrayList<String>();
                 //创建Pattern并进行匹配
-                Pattern pattern= Pattern.compile("(?<=<strong>).*?(?=</strong>)");
+                Pattern pattern= compile("(?<=<strong>).*?(?=</strong>)");
                 Matcher matcher=pattern.matcher(str);
                 //将所有匹配的结果打印输出
                 while(matcher.find()) {

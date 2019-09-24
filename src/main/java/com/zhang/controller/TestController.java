@@ -1,12 +1,11 @@
 package com.zhang.controller;
 
 import com.zhang.model.User;
-import org.jsoup.Jsoup;
+import com.zhang.util.JsonUtil;
+import com.zhang.util.Response;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springside.modules.mapper.JsonMapper;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -19,7 +18,6 @@ import java.util.Scanner;
 @RestController
 @RequestMapping("/test")
 public class TestController {
-    private static final JsonMapper jsonMapper = JsonMapper.nonEmptyMapper();
     @RequestMapping("/hello")
     public String hello(){
         Map<String,Object> map = new HashMap<>();
@@ -29,7 +27,7 @@ public class TestController {
 //        user.setUsername("zhang");
 //        user.setPassword("aa123456");
 //        user.setPhone("13567121794");
-        return jsonMapper.toJson(user);
+        return JsonUtil.objectToJsonStr(new Response(user));
     }
 //    public static void main(String[] args){
 ////        int[] a = {1,7,3,5,2,9,4,6,8};

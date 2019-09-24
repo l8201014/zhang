@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.regex.Pattern.*;
+
 /**
  * @author ：zhangwn
  * @date ：Created in 2019/3/7 13:55
@@ -95,9 +97,9 @@ public class MagicController {
         rsp.setResponseList(resourcesList);
         rsp.setPageConfig(pageConfig);
         if(null == resourcesList || resourcesList.size() <= 0){
-            return JsonUtil.getJson(new Response(null));
+            return JsonUtil.objectToJsonStr(new Response(null));
         }
-        return JsonUtil.getJson(new Response(rsp));
+        return JsonUtil.objectToJsonStr(new Response(rsp));
     }
 
     /**
@@ -137,9 +139,9 @@ public class MagicController {
         logger.info("queryMagneticDetails1耗时:" + (end - start));
         rsp.setResource(resource);
         if(null == resource){
-            return JsonUtil.getJson(new Response(null));
+            return JsonUtil.objectToJsonStr(new Response(null));
         }
-        return JsonUtil.getJson(new Response(rsp));
+        return JsonUtil.objectToJsonStr(new Response(rsp));
     }
 
 //    /**
@@ -406,7 +408,7 @@ public class MagicController {
     public static void main(String[] args) throws IOException {
         String newUrl = UrlUtrl.SB_URL + "/list?q=" + URLEncoder.encode("海贼王");//transformUrl(url, keyword, page);
         String html = Jsoup.connect(newUrl).get().body().html();
-        Pattern pattern= Pattern.compile("(?<=傻逼吧为您找到相关结果约).*?(?=个)");
+        Pattern pattern= compile("(?<=傻逼吧为您找到相关结果约).*?(?=个)");
         Matcher matcher=pattern.matcher(html);
         //将所有匹配的结果打印输出
         while(matcher.find()) {
